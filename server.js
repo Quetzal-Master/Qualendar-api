@@ -2,7 +2,7 @@
 const fastify = require("fastify")({ logger: true });
 fastify.register(require("@fastify/websocket"));
 
-let wsConnection;
+let wsConnection = null;
 
 fastify.register(async function (fastify) {
 	fastify.get("/websocket-connect", { websocket: true }, (connection /* SocketStream */, req /* FastifyRequest */) => {
