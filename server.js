@@ -15,11 +15,13 @@ fastify.register(async function (fastify) {
 });
 
 fastify.post("/webhook", (req, reply) => {
+	replyCode = 201;
 	if (wsConnection) {
+		replyCode = 200;
 		// Send a message to the WebSocket client
 		wsConnection.socket.send("A new GET request has been received");
 	}
-	reply.code(200).header("Content-Type", "application/json").send({ hello: wsConnection });
+	reply.code(replyCode);
 });
 
 fastify.get("/hello", (req, reply) => {
