@@ -30,7 +30,7 @@ fastify.get("/hello", (req, reply) => {
 const start = async () => {
 	try {
 		var server_port = process.env.PORT || 5000;
-		await fastify.listen();
+		await fastify.listen({ port: server_port });
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
