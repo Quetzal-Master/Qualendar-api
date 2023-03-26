@@ -11,6 +11,10 @@ fastify.register(async function (fastify) {
 			connection.socket.send("hi from server");
 			wsConnection = connection;
 		});
+
+		connection.socket.on("close", (error) => {
+			console.log(`WebSocket closed: ${error}`);
+		});
 	});
 });
 
