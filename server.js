@@ -29,7 +29,7 @@ fastify.post("/webhook", (req, reply) => {
 });
 
 fastify.get("/hello", (req, reply) => {
-	reply.code(200).send({ hello: "world" });
+	return reply.code(200).send({ hello: "world" });
 });
 
 // Run the server!
