@@ -5,7 +5,7 @@ fastify.register(require("@fastify/websocket"));
 let wsConnection;
 
 fastify.register(async function (fastify) {
-	fastify.get("/fastify-route", { websocket: true }, (connection /* SocketStream */, req /* FastifyRequest */) => {
+	fastify.get("/websocket-connect", { websocket: true }, (connection /* SocketStream */, req /* FastifyRequest */) => {
 		connection.socket.on("message", (message) => {
 			// message.toString() === 'hi from client'
 			connection.socket.send("hi from server");
@@ -29,7 +29,7 @@ fastify.get("/hello", (req, reply) => {
 // Run the server!
 const start = async () => {
 	try {
-		await fastify.listen({ port: 3002 });
+		await fastify.listen();
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
