@@ -29,7 +29,9 @@ fastify.get("/hello", (req, reply) => {
 // Run the server!
 const start = async () => {
 	try {
-		await fastify.listen({ port: process.env.PORT || 5000 });
+		var server_port = process.env.YOUR_PORT || process.env.PORT || 5000;
+		var server_host = process.env.YOUR_HOST || "0.0.0.0";
+		await fastify.listen({ port: server_port, host: server_host });
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
