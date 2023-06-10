@@ -1,4 +1,3 @@
-// Require the framework
 const fastify = require('fastify')({ logger: true });
 const cors = require('@fastify/cors');
 
@@ -56,7 +55,12 @@ fastify.get('/hello', (req, reply) => {
 // Run the server!
 const start = async () => {
 	try {
-		await fastify.listen({ port: process.env.PORT || 8000, host: '0.0.0.0' });
+		// Google Cloud Run will set this environment variable for you, so
+		// you can also use it locally to emulate Cloud Run.
+		const port = process.env.PORT || 8000;
+		await fastify.listen(port, '0.0.0.0');
+
+		console.log(`Server listening on http://0.0.0.0:${port}`);
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
