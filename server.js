@@ -1,21 +1,24 @@
 // Require the framework
 const fastify = require('fastify')({ logger: true });
-const cors = require('@fastify/cors');  // Change this line
+const cors = require('@fastify/cors');
 
 fastify.register(cors, {
-	origin: true, // Reflect the request origin
-	methods: ['GET', 'POST'], // The methods you're using
-	allowedHeaders: ['Content-Type'], // The headers you're using in your requests
-	credentials: true, // This allows cookies and credentials to be sent with requests
+	origin: true,
+	methods: ['GET', 'POST'],
+	allowedHeaders: ['Content-Type'],
+	credentials: true,
 });
 
 let sseConnection = null;
+
+// Heartbeat interval (in milliseconds)
+const HEARTBEAT_INTERVAL = 15000;
 
 fastify.get('/events', async function (req, reply) {
 	reply.raw.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
 	reply.raw.setHeader('Access-Control-Allow-Methods', 'GET');
 	reply.raw.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-	reply.raw.setHeader('Access-Control-Allow-Credentials', 'true'); // Add this line
+	reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
 	reply.raw.setHeader('Content-Type', 'text/event-stream');
 	reply.raw.setHeader('Cache-Control', 'no-cache');
 	reply.raw.setHeader('Connection', 'keep-alive');
@@ -24,10 +27,16 @@ fastify.get('/events', async function (req, reply) {
 	req.raw.on('close', () => {
 		sseConnection = null;
 		console.log('SSE connection closed');
+		clearInterval(heartbeat);
 		reply.raw.end();
 	});
 
 	sseConnection = reply.raw;
+
+	// Start the heartbeat
+	const heartbeat = setInterval(() => {
+		sseConnection.write(':heartbeat\n\n');
+	}, HEARTBEAT_INTERVAL);
 });
 
 fastify.post('/webhook', (req, reply) => {
@@ -35,7 +44,7 @@ fastify.post('/webhook', (req, reply) => {
 
 	if (sseConnection) {
 		replyCode = 200;
-		sseConnection.write(`data: {"message": "A new POST request has been received"}\n\n`);
+		sseConnection.write(`data: {"message": "A new POST request has been received"}\n\n\n`);
 	}
 	reply.code(replyCode).send("SIUUU");
 });
