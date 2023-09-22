@@ -1,34 +1,32 @@
 const fastify = require("fastify")({ logger: true });
 const cors = require("@fastify/cors");
+const ssePlugin = require("fastify-sse-v2");
 
 fastify.register(cors, {
-	origin: true,
+	origin: "*",
 	methods: ["GET", "POST"],
 	allowedHeaders: ["Content-Type"],
 });
 
-let sseConnection = null;
+fastify.register(ssePlugin);
 
+let sseConnection = null;
 const HEARTBEAT_INTERVAL = 15000;
 
 fastify.get("/events", async function (req, reply) {
-	reply.raw.setHeader("Content-Type", "text/event-stream");
-	reply.raw.setHeader("Cache-Control", "no-cache");
-	reply.raw.setHeader("Connection", "keep-alive");
-	reply.raw.flushHeaders();
+	console.log("SSE connection requested");
 
-	req.raw.on("close", () => {
-		sseConnection = null;
-		console.log("SSE connection closed");
-		clearInterval(heartbeat);
-		reply.raw.end();
+	sseConnection = reply.sse((sse) => {
+		const heartbeat = setInterval(() => {
+			console.log("Sending heartbeat");
+			sse.send(":heartbeat\n\n");
+		}, HEARTBEAT_INTERVAL);
+
+		sse.on("close", () => {
+			console.log("SSE connection closed");
+			clearInterval(heartbeat);
+		});
 	});
-
-	sseConnection = reply.raw;
-
-	const heartbeat = setInterval(() => {
-		sseConnection.write(":heartbeat\n\n");
-	}, HEARTBEAT_INTERVAL);
 });
 
 fastify.post("/webhook", (req, reply) => {
@@ -36,8 +34,8 @@ fastify.post("/webhook", (req, reply) => {
 
 	if (sseConnection) {
 		replyCode = 200;
-		sseConnection.write(
-			`data: {"message": "A new POST request has been received"}\n\n\n`
+		sseConnection.send(
+			`data: {"message": "A new POST request has been received"}\n\n`
 		);
 	}
 	reply.code(replyCode).send("SIUUU");
