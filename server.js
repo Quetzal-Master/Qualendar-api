@@ -13,7 +13,7 @@ fastify.register(ssePlugin);
 const HEARTBEAT_INTERVAL = 15000;
 let sseReply = null;
 
-fastify.get("/events", async (request, reply) => {
+fastify.get("/events", (request, reply) => {
 	console.log("SSE connection requested");
 
 	// Stocker la réponse 'reply' pour une utilisation ultérieure
