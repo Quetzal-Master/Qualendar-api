@@ -39,7 +39,7 @@ fastify.get("/events", (request, reply) => {
 	}
 });
 
-fastify.post("/webhook", () => {
+fastify.post("/webhook", (request, reply) => {
 	let replyCode = 201;
 
 	if (sseReply) {
@@ -48,6 +48,8 @@ fastify.post("/webhook", () => {
 			data: "update",
 		});
 	}
+
+	reply.code(replyCode).send();
 });
 
 fastify.get("/hello", (req, reply) => {
