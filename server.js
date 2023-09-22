@@ -26,7 +26,7 @@ fastify.get("/events", async (request, reply) => {
 		}, HEARTBEAT_INTERVAL);
 
 		// Écouter la fermeture de la connexion et arrêter les heartbeats
-		request.socket.on("close", () => {
+		request.raw.on("close", () => {
 			console.log("SSE connection closed");
 			clearInterval(heartbeat);
 		});
