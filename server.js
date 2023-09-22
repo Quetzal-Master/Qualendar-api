@@ -19,7 +19,7 @@ fastify.get("/events", async function (req, reply) {
 	sseConnection = reply.sse((sse) => {
 		const heartbeat = setInterval(() => {
 			console.log("Sending heartbeat");
-			sse.send(":heartbeat\n\n");
+			sse.send(":");
 		}, HEARTBEAT_INTERVAL);
 
 		sse.on("close", () => {
