@@ -12,9 +12,6 @@ let sseConnection = null;
 const HEARTBEAT_INTERVAL = 15000;
 
 fastify.get("/events", async function (req, reply) {
-	reply.raw.setHeader("Access-Control-Allow-Origin", "*");
-	reply.raw.setHeader("Access-Control-Allow-Methods", "GET");
-	reply.raw.setHeader("Access-Control-Allow-Headers", "Content-Type");
 	reply.raw.setHeader("Content-Type", "text/event-stream");
 	reply.raw.setHeader("Cache-Control", "no-cache");
 	reply.raw.setHeader("Connection", "keep-alive");
