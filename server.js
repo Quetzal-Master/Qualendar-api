@@ -1,64 +1,61 @@
-const fastify = require('fastify')({ logger: true });
-const cors = require('@fastify/cors');
+const fastify = require("fastify")({ logger: true });
+const cors = require("@fastify/cors");
 
 fastify.register(cors, {
 	origin: true,
-	methods: ['GET', 'POST'],
-	allowedHeaders: ['Content-Type'],
+	methods: ["GET", "POST"],
+	allowedHeaders: ["Content-Type"],
 	credentials: true,
 });
 
 let sseConnection = null;
 
-// Heartbeat interval (in milliseconds)
 const HEARTBEAT_INTERVAL = 15000;
 
-fastify.get('/events', async function (req, reply) {
-	reply.raw.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-	reply.raw.setHeader('Access-Control-Allow-Methods', 'GET');
-	reply.raw.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-	reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
-	reply.raw.setHeader('Content-Type', 'text/event-stream');
-	reply.raw.setHeader('Cache-Control', 'no-cache');
-	reply.raw.setHeader('Connection', 'keep-alive');
+fastify.get("/events", async function (req, reply) {
+	reply.raw.setHeader("Access-Control-Allow-Origin", "*");
+	reply.raw.setHeader("Access-Control-Allow-Methods", "GET");
+	reply.raw.setHeader("Access-Control-Allow-Headers", "Content-Type");
+	reply.raw.setHeader("Content-Type", "text/event-stream");
+	reply.raw.setHeader("Cache-Control", "no-cache");
+	reply.raw.setHeader("Connection", "keep-alive");
 	reply.raw.flushHeaders();
 
-	req.raw.on('close', () => {
+	req.raw.on("close", () => {
 		sseConnection = null;
-		console.log('SSE connection closed');
+		console.log("SSE connection closed");
 		clearInterval(heartbeat);
 		reply.raw.end();
 	});
 
 	sseConnection = reply.raw;
 
-	// Start the heartbeat
 	const heartbeat = setInterval(() => {
-		sseConnection.write(':heartbeat\n\n');
+		sseConnection.write(":heartbeat\n\n");
 	}, HEARTBEAT_INTERVAL);
 });
 
-fastify.post('/webhook', (req, reply) => {
+fastify.post("/webhook", (req, reply) => {
 	let replyCode = 201;
 
 	if (sseConnection) {
 		replyCode = 200;
-		sseConnection.write(`data: {"message": "A new POST request has been received"}\n\n\n`);
+		sseConnection.write(
+			`data: {"message": "A new POST request has been received"}\n\n\n`
+		);
 	}
 	reply.code(replyCode).send("SIUUU");
 });
 
-fastify.get('/hello', (req, reply) => {
-	return reply.code(200).send({ hello: 'world' });
+fastify.get("/hello", (req, reply) => {
+	return reply.code(200).send({ hello: "world" });
 });
 
 // Run the server!
 const start = async () => {
 	try {
-		// Google Cloud Run will set this environment variable for you, so
-		// you can also use it locally to emulate Cloud Run.
 		const port = process.env.PORT || 8000;
-		await fastify.listen(port, '0.0.0.0');
+		await fastify.listen(port, "0.0.0.0");
 
 		console.log(`Server listening on http://0.0.0.0:${port}`);
 	} catch (err) {
