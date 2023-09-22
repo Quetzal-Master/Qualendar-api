@@ -13,20 +13,26 @@ fastify.register(ssePlugin);
 let sseConnection = null;
 const HEARTBEAT_INTERVAL = 15000;
 
-fastify.get("/events", async function (req, reply) {
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+fastify.get("/events", async (request, reply) => {
 	console.log("SSE connection requested");
 
-	sseConnection = reply.sse((sse) => {
+	try {
+		// Envoi de heartbeats réguliers
 		const heartbeat = setInterval(() => {
 			console.log("Sending heartbeat");
-			sse.send(":");
+			reply.sse({ data: "heartbeat" });
 		}, HEARTBEAT_INTERVAL);
 
-		sse.on("close", () => {
+		// Écouter la fermeture de la connexion et arrêter les heartbeats
+		request.socket.on("close", () => {
 			console.log("SSE connection closed");
 			clearInterval(heartbeat);
 		});
-	});
+	} catch (error) {
+		console.error("Error in SSE route:", error);
+	}
 });
 
 fastify.post("/webhook", (req, reply) => {
