@@ -51,9 +51,7 @@ fastify.get("/hello", (req, reply) => {
 const start = async () => {
 	try {
 		const port = process.env.PORT || 8000;
-		await fastify.listen(port, "0.0.0.0");
-
-		console.log(`Server listening on http://0.0.0.0:${port}`);
+		await fastify.listen({ port: port, host: "0.0.0.0" });
 	} catch (err) {
 		fastify.log.error(err);
 		process.exit(1);
