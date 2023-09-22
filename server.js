@@ -5,7 +5,6 @@ fastify.register(cors, {
 	origin: true,
 	methods: ["GET", "POST"],
 	allowedHeaders: ["Content-Type"],
-	credentials: true,
 });
 
 let sseConnection = null;
