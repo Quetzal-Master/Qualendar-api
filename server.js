@@ -10,25 +10,27 @@ fastify.register(cors, {
 
 fastify.register(ssePlugin);
 
-let sseConnection = null;
 const HEARTBEAT_INTERVAL = 15000;
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+let sseReply = null;
 
 fastify.get("/events", async (request, reply) => {
 	console.log("SSE connection requested");
+
+	// Stocker la réponse 'reply' pour une utilisation ultérieure
+	sseReply = reply;
 
 	try {
 		// Envoi de heartbeats réguliers
 		const heartbeat = setInterval(() => {
 			console.log("Sending heartbeat");
-			reply.sse({ data: "heartbeat" });
+			sseReply.sse({ data: "heartbeat" });
 		}, HEARTBEAT_INTERVAL);
 
 		// Écouter la fermeture de la connexion et arrêter les heartbeats
 		request.raw.on("close", () => {
 			console.log("SSE connection closed");
 			clearInterval(heartbeat);
+			sseReply = null; // Réinitialiser sseReply lorsque la connexion est fermée
 		});
 	} catch (error) {
 		console.error("Error in SSE route:", error);
@@ -38,11 +40,13 @@ fastify.get("/events", async (request, reply) => {
 fastify.post("/webhook", (req, reply) => {
 	let replyCode = 201;
 
-	if (sseConnection) {
+	if (sseReply) {
 		replyCode = 200;
-		sseConnection.send(
-			`data: {"message": "A new POST request has been received"}\n\n`
-		);
+		sseReply.sse({
+			data: JSON.stringify({
+				message: "A new POST request has been received",
+			}),
+		});
 	}
 	reply.code(replyCode).send("SIUUU");
 });
