@@ -3,14 +3,15 @@ const cors = require("@fastify/cors");
 const ssePlugin = require("fastify-sse-v2");
 
 fastify.register(cors, {
-	origin: "*",
+	origin: true,
+	credentials: true,
 	methods: ["GET", "POST"],
 	allowedHeaders: ["Content-Type"],
 });
 
 fastify.register(ssePlugin);
 
-const HEARTBEAT_INTERVAL = 15000;
+const HEARTBEAT_INTERVAL = 5000;
 let sseReply = null;
 
 fastify.get("/events", (request, reply) => {
