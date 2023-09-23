@@ -41,6 +41,7 @@ fastify.get("/events", (request, reply) => {
 
 fastify.post("/webhook", (request, reply) => {
 	let replyCode = 201;
+	console.log("Sending update");
 
 	if (sseReply) {
 		replyCode = 200;
